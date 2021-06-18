@@ -28,6 +28,7 @@ Src/AppSw/Tricore/can \
 Src/AppSw/Tricore/eru \
 Src/AppSw/Tricore/gpio \
 Src/AppSw/Tricore/spi \
+Src/AppSw/Tricore/stm_systick \
 Src/BaseSw/Infra/Platform/Tricore/Compilers \
 Src/BaseSw/Service/CpuGeneric/If \
 Src/BaseSw/Service/CpuGeneric/StdIf \

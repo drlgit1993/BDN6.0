@@ -364,6 +364,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/can}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/Timer}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/eru}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/stm_systick}&quot;"/>
 								</option>
 								<option id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.debug.dwarfControlFlow.1674224332" name="Print control flow to debug section (-fdwarf-control-flow)" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.debug.dwarfControlFlow" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard.496029676" name="C Standard (-std)" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard" useByScannerDiscovery="false" value="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard.c99" valueType="enumerated"/>

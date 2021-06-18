@@ -104,14 +104,15 @@ typedef unsigned char       boolean;        /* for use with TRUE/FALSE      */
 /* [cover parentID={4269E5AB-7F28-4803-8D60-7B4EC91CB087}] uint8 [/cover] */
 typedef unsigned char       uint8;
 
+typedef signed char     int8;
 /* 16bit unsigned:  0..65535 [0x0000..0xFFFF]*/
 /* [cover parentID={66E964CA-35D5-4013-BB61-1E824636D713}] uint16 [/cover] */
 typedef unsigned short      uint16;
-
+typedef signed short      int16;
 /* 32bit unsigned:  0..4294967295 [0x00000000..0xFFFFFFFF]*/
 /* [cover parentID={DA33B7A0-7CD3-45e7-9C9A-6D63FB8BA3DC}] uint32 [/cover] */
 typedef unsigned long       uint32;
-
+typedef signed long         int32;
 /* 64bit unsigned
 *          0..18446744073709551615   [0x0000000000000000..0xFFFFFFFFFFFFFFFF]*/
 /* [cover parentID={3409E2A3-BF2D-44a5-9B00-A72300848166}] uint64 */

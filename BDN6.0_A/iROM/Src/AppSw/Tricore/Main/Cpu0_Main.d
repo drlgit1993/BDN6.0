@@ -81,7 +81,8 @@ Src/AppSw/Tricore/Main/Cpu0_Main.o: ../Src/AppSw/Tricore/Main/Cpu0_Main.c \
  E:\work\BDN6.0\software\code\BDN6.0_A\Src\BaseSw\iLLD\TC26B\Tricore\Qspi\SpiSlave/IfxQspi_SpiSlave.h \
  E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\spi/spi.h \
  E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\gpio/gpio.h \
- E:\work\BDN6.0\software\code\BDN6.0_A\Src\BaseSw\iLLD\TC26B\Tricore/Port/Io/IfxPort_Io.h
+ E:\work\BDN6.0\software\code\BDN6.0_A\Src\BaseSw\iLLD\TC26B\Tricore/Port/Io/IfxPort_Io.h \
+ E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\stm_systick/stm_systick.h
 
 ../Src/AppSw/Tricore/Main/Cpu0_Main.h:
 
@@ -248,3 +249,5 @@ E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\spi/spi.h:
 E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\gpio/gpio.h:
 
 E:\work\BDN6.0\software\code\BDN6.0_A\Src\BaseSw\iLLD\TC26B\Tricore/Port/Io/IfxPort_Io.h:
+
+E:\work\BDN6.0\software\code\BDN6.0_A\Src\AppSw\Tricore\stm_systick/stm_systick.h:

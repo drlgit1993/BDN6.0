@@ -40,5 +40,7 @@ IFX_EXTERN boolean UART3_Write_Data(uint8 *data,Ifx_SizeT *cnt);
 
 
 IFX_EXTERN void UART3_test(void);
-IFX_EXTERN void sendUARTMessage(char * msg, Ifx_SizeT count);      /* Send function            */
+IFX_EXTERN void sendUARTMessage(char * msg, Ifx_SizeT count);
+IFX_EXTERN void uart0_printf(const int8 *format, ...);
+
 #endif /* 0_APPSW_TRICORE_MAIN_ASCLIN_APP_H_ */

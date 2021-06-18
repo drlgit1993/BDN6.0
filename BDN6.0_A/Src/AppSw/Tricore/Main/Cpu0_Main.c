@@ -34,6 +34,7 @@
 #include "AsclinApp.h"
 #include "spi.h"
 #include "gpio.h"
+#include "stm_systick.h"
 
 /******************************************************************************/
 /*------------------------Inline Function Prototypes--------------------------*/
@@ -63,10 +64,8 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
  */
 int core0_main(void)
 {
-    /*
-     * !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
-     * Enable the watchdog in the demo if it is required and also service the watchdog periodically
-     * */
+	uint32 cnt=0;
+	IfxCpu_disableInterrupts();
     IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_disableSafetyWatchdog(IfxScuWdt_getSafetyWatchdogPassword());
 
@@ -79,19 +78,20 @@ int core0_main(void)
     /* Enable the global interrupts of this CPU */
     IfxCpu_enableInterrupts();
 
-    /* Wait for CPU sync event */
-        IfxCpu_emitEvent(&g_cpuSyncEvent);
-        IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
-
+    bsp_UART0_init();
+   /*
     bsp_UART1_init();
     bsp_UART2_init();
     bsp_UART3_init();
     bsp_QSPI_Init();
     bsp_gpio_init();
-    /* background endless loop */
+    */
+
     while (TRUE)
     {
-
+    	uart0_printf("cnt:%d\r\n",cnt);
+    	cnt ++;
+    	delay_ms(1000);
     }
 
     return 0;

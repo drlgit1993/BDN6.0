@@ -14958,7 +14958,7 @@ Discarded input sections
 
 Linker version: GNU ld version (GNU Binutils) 2.20 (TriCore) using BFD version (GNU Binutils) 2.20 (v2.3), Tool Version v2.7
 Name of linker executable: d:/hightec/toolchains/tricore/v4.9.3.0-infineon-1.0/bin/../lib/gcc/tricore/4.9.4/../../../../tricore/bin/ld.exe
-Date of link run: Thu Jun 17 16:21:55 2021
+Date of link run: Fri Jun 18 18:17:03 2021
 Name of linker map file: BDN6.0_B.map
 
 >>> Symbols (global (S = g) and static (S = l); sorted by address)
