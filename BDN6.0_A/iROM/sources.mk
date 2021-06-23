@@ -21,7 +21,6 @@ CPCP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Src/AppSw/CpuGeneric/Config \
-Src/AppSw/Tricore/AscLin \
 Src/AppSw/Tricore/Main \
 Src/AppSw/Tricore/Timer \
 Src/AppSw/Tricore/can \
@@ -29,6 +28,7 @@ Src/AppSw/Tricore/eru \
 Src/AppSw/Tricore/gpio \
 Src/AppSw/Tricore/spi \
 Src/AppSw/Tricore/stm_systick \
+Src/AppSw/Tricore/uart \
 Src/BaseSw/Infra/Platform/Tricore/Compilers \
 Src/BaseSw/Service/CpuGeneric/If \
 Src/BaseSw/Service/CpuGeneric/StdIf \

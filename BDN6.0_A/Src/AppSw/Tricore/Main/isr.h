@@ -44,6 +44,9 @@
 #define QSPI3_MASTER_RX_ISR_PRIORITY        (22)
 #define QSPI3_MASTER_ER_ISR_PRIORITY        (23)
 
-#define CCU6_ISR_PRIORITY                  (24)                      /* Define the GPT12 Timer interrupt priority            */
+#define UART0_RX_DMA_PRIORITY                  (24)
+#define UART0_TX_DMA_PRIORITY                  (25)
+
+#define CCU6_ISR_PRIORITY                  (26)                      /* Define the GPT12 Timer interrupt priority            */
 
 #endif /* APPSW_TRICORE_MAIN_ISR_H_ */

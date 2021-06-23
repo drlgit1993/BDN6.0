@@ -25,13 +25,13 @@
 /*----------------------------------Includes----------------------------------*/
 /******************************************************************************/
 
+#include <uart/uart.h>
 #include "Cpu0_Main.h"
 #include "SysSe/Bsp/Bsp.h"
 #include "Scu\Std\IfxScuWdt.h"
 
 #include "IfxPort.h"
 #include "IfxStm.h"
-#include "AsclinApp.h"
 #include "spi.h"
 #include "gpio.h"
 #include "stm_systick.h"
@@ -43,6 +43,11 @@
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
+/*
+ * watchdog timeout=(0xFFFF - WD_REL_VAL)/(Fspb/WDTSCON1.IRx)=(0xFFFF - WD_REL_VAL)/(100MHz/16384)
+ * the value 16384 is a constant ,defined by IRx of register WDTSCON1.
+*/
+#define WD_REL_VAL   (0xE828) /*1s*/
 
 /******************************************************************************/
 /*------------------------Private Variables/Constants-------------------------*/
@@ -64,21 +69,18 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
  */
 int core0_main(void)
 {
-	uint32 cnt=0;
-	IfxCpu_disableInterrupts();
-    IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
+	IfxCpu_enableInterrupts();
+
+	//IfxScuWdt_disableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_disableSafetyWatchdog(IfxScuWdt_getSafetyWatchdogPassword());
 
-    /* Initialise the application state */
     g_AppCpu0.info.pllFreq = IfxScuCcu_getPllFrequency();
     g_AppCpu0.info.cpuFreq = IfxScuCcu_getCpuFrequency(IfxCpu_getCoreIndex());
     g_AppCpu0.info.sysFreq = IfxScuCcu_getSpbFrequency();
     g_AppCpu0.info.stmFreq = IfxStm_getFrequency(&MODULE_STM0);
 
-    /* Enable the global interrupts of this CPU */
-    IfxCpu_enableInterrupts();
-
     bsp_UART0_init();
+    uart0_printf("%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
    /*
     bsp_UART1_init();
     bsp_UART2_init();
@@ -87,11 +89,20 @@ int core0_main(void)
     bsp_gpio_init();
     */
 
-    while (TRUE)
+    //IfxScuWdt_enableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
+    IfxScuWdt_changeCpuWatchdogReload(IfxScuWdt_getCpuWatchdogPassword(), WD_REL_VAL); /* Set CPU0WD timer to ~1.3 sec */
+    //IfxScuWdt_serviceCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());               /* Service the CPU0WDT          */
+
+    /* Wait for CPU sync event */
+    IfxCpu_emitEvent(&g_cpuSyncEvent);
+    IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
+
+
+    while(1)
     {
-    	uart0_printf("cnt:%d\r\n",cnt);
-    	cnt ++;
-    	delay_ms(1000);
+    	delay_ms(10);
+    	uart0_dma_callback();
+    	IfxScuWdt_serviceCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     }
 
     return 0;

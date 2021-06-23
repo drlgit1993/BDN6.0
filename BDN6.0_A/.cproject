@@ -255,7 +255,7 @@
 						<toolChain id="com.rt.hightec.buildsystem.tricore.new.toolchain.new.executable.77744943" name="TriCore Toolchain" superClass="com.rt.hightec.buildsystem.tricore.new.toolchain.new.executable">
 							<option id="com.rt.hightec.buildsystem.tricore.new.mcpu.1886080273" name="CPU type (-mcpu)" superClass="com.rt.hightec.buildsystem.tricore.new.mcpu" useByScannerDiscovery="false" value="TC26XX" valueType="enumerated"/>
 							<targetPlatform archList="TriCore" binaryParser="org.eclipse.cdt.core.ELF" id="com.rt.hightec.buildsystem.tricore.new.excutable.targetplatform.1183446377" isAbstract="false" name="Infineon\TC265B Application Kit\AppKit_TC265B_singlecore" superClass="com.rt.hightec.buildsystem.tricore.new.excutable.targetplatform"/>
-							<builder buildPath="${workspace_loc:/TC264_Samrt_Car_Demo}/iROM" id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.builder.1868607452" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.builder"/>
+							<builder buildPath="E:\work\BDN6.0\software\BDN6.0\BDN6.0_A\iROM\Src" id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.builder.1868607452" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="8" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.builder"/>
 							<tool id="com.rt.hightec.buildsystem.tricore.new.compiler.cpp.1648250835" name="TriCore C++ Compiler" superClass="com.rt.hightec.buildsystem.tricore.new.compiler.cpp">
 								<option id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.symbols.defined.234668285" name="Defined symbols (-D)" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.symbols.defined" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="APPKIT_TC265B"/>
@@ -349,7 +349,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/BaseSw/iLLD/TC26B/Tricore/Qspi/SpiSlave}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/BaseSw/iLLD/TC26B/Tricore/Qspi/Std}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/BaseSw/iLLD/TC26B/Tricore}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/AscLin}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/CpuGeneric/Config}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/CpuGeneric}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore}&quot;"/>
@@ -365,6 +364,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/Timer}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/eru}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/stm_systick}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Src/AppSw/Tricore/uart}&quot;"/>
 								</option>
 								<option id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.debug.dwarfControlFlow.1674224332" name="Print control flow to debug section (-fdwarf-control-flow)" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.debug.dwarfControlFlow" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option id="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard.496029676" name="C Standard (-std)" superClass="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard" useByScannerDiscovery="false" value="com.rt.hightec.framework.buildsystem.abstract.hightec.tool.compiler.c.language.standard.c99" valueType="enumerated"/>
@@ -406,7 +406,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="0_Src|models|ld" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ld|models|0_Src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

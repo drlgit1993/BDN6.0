@@ -1,12 +1,33 @@
-#include "AsclinApp.h"
 #include <stdarg.h>
 #include <string.h>
+#include <uart/uart.h>
 
-IfxAsclin_Asc UART0;
+/***********************************************UART0***********************************************************/
 #define UART0_TX_BUFFER_SIZE 64
-static uint8 UART0_TxBuffer[UART0_TX_BUFFER_SIZE + sizeof(Ifx_Fifo) + 8];
 #define UART0_RX_BUFFER_SIZE 64
+
+static uint8 UART0_TxBuffer[UART0_TX_BUFFER_SIZE + sizeof(Ifx_Fifo) + 8];
 static uint8 UART0_RxBuffer[UART0_RX_BUFFER_SIZE + sizeof(Ifx_Fifo) + 8];
+
+static IfxAsclin_Asc UART0;
+static uint16 uart0_cnt_head = 0;
+static uint16 uart0_cnt_tail = 0;
+
+#if (USR_UART0_RX_DMA==1)
+#define UART0_DMA_RX_BUFFER_SIZE                           1024
+#define __uart0_Dma_ChannelIncrementCircular(size)         IfxDma_ChannelIncrementCircular_##size
+#define uart0_Dma_ChannelIncrementCircular(size)           __uart0_Dma_ChannelIncrementCircular(size)
+
+static IfxDma_Dma_Channel uart0_rx_Dma_Channel;
+static uint8 UART0_DMA_RxBuffer[UART0_DMA_RX_BUFFER_SIZE]  IFX_ALIGN(UART0_DMA_RX_BUFFER_SIZE);
+#endif
+
+#if (USR_UART0_TX_DMA==1)
+#define UART0_DMA_TX_BUFFER_SIZE                           1024
+static IfxDma_Dma_Channel uart0_tx_Dma_Channel;
+static uint8 UART0_DMA_TxBuffer[UART0_DMA_TX_BUFFER_SIZE]  IFX_ALIGN(4);
+#endif
+/***************************************************************************************************************/
 
 
 IfxAsclin_Asc UART1;
@@ -29,58 +50,67 @@ static uint8 UART3_TxBuffer[UART3_TX_BUFFER_SIZE + sizeof(Ifx_Fifo) + 8];
 #define UART3_RX_BUFFER_SIZE 512
 static uint8 UART3_RxBuffer[UART3_RX_BUFFER_SIZE + sizeof(Ifx_Fifo) + 8];
 
-//static IfxDma_Dma_Channel Dma_Channel_uart3;
-#define INTPRIO_DMA_UART3       (10)
-#define UART3_DMA_RX_CHANNEL_ID (IfxDma_ChannelId_0)
-IfxDma_Dma uart3_dma;
-
-
 IFX_INTERRUPT(UART0_Tx_IRQHandler, 0, UART0_TX_ISR_PRIORITY);
 void UART0_Tx_IRQHandler(void)
 {
-    IfxAsclin_Asc_isrTransmit(&UART0);
+	 IfxAsclin_Asc_isrTransmit(&UART0);
 }
-
-IFX_INTERRUPT(UART0_Rx_IRQHandler, 0, UART0_RX_ISR_PRIORITY);
-void UART0_Rx_IRQHandler(void)
+#if(USR_UART0_TX_DMA==1)
+IFX_INTERRUPT(UART0_DMA_Tx_IRQHandler, 0, UART0_TX_DMA_PRIORITY);
+void UART0_DMA_Tx_IRQHandler(void)
 {
-    IfxAsclin_Asc_isrReceive(&UART0);
+	 //IfxDma_disableChannelTransaction(&MODULE_DMA,uart0_tx_Dma_Channel.channelId);
+	 IfxDma_clearChannelInterrupt(&MODULE_DMA,uart0_tx_Dma_Channel.channelId);
+}
+#endif
+
+IFX_INTERRUPT(UART0_DMA_Rx_IRQHandler, 0, UART0_RX_DMA_PRIORITY);
+void UART0_DMA_Rx_IRQHandler(void)
+{
+	uart0_cnt_tail = UART0_DMA_RX_BUFFER_SIZE - uart0_rx_Dma_Channel.channel->CHCSR.B.TCOUNT;
 }
 IFX_INTERRUPT(UART0_ER_IRQHandler, 0, UART0_ER_ISR_PRIORITY);
 void UART0_ER_IRQHandler(void)
 {
     IfxAsclin_Asc_isrError(&UART0);
+    uart0_printf("uart0 err\r\n");
 }
 
 IFX_INTERRUPT(UART1_Tx_IRQHandler, 0, UART1_TX_ISR_PRIORITY);
 void UART1_Tx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrTransmit(&UART1);
 }
 IFX_INTERRUPT(UART1_Rx_IRQHandler, 0, UART1_RX_ISR_PRIORITY);
 void UART1_Rx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrReceive(&UART1);
 }
 IFX_INTERRUPT(UART1_ER_IRQHandler, 0, UART1_ER_ISR_PRIORITY);
 void UART1_ER_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrError(&UART1);
 }
 
 IFX_INTERRUPT(UART2_Tx_IRQHandler, 0, UART2_TX_ISR_PRIORITY);
 void UART2_Tx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrTransmit(&UART2);
 }
 IFX_INTERRUPT(UART2_Rx_IRQHandler, 0, UART2_RX_ISR_PRIORITY);
 void UART2_Rx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrReceive(&UART2);
 }
 IFX_INTERRUPT(UART2_ER_IRQHandler, 0, UART2_ER_ISR_PRIORITY);
 void UART2_ER_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrError(&UART2);
 }
 
@@ -88,12 +118,14 @@ uint8 uart3_flag=0;
 IFX_INTERRUPT(UART3_Tx_IRQHandler, 0, UART3_TX_ISR_PRIORITY);
 void UART3_Tx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrTransmit(&UART3);
 }
 
 IFX_INTERRUPT(UART3_Rx_IRQHandler, 0, UART3_RX_ISR_PRIORITY);
 void UART3_Rx_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrReceive(&UART3);
     uart3_flag=1;
 }
@@ -101,40 +133,103 @@ void UART3_Rx_IRQHandler(void)
 IFX_INTERRUPT(UART3_ER_IRQHandler, 0, UART3_ER_ISR_PRIORITY);
 void UART3_ER_IRQHandler(void)
 {
+	 IfxCpu_enableInterrupts();
     IfxAsclin_Asc_isrError(&UART3);
 }
-
-/*
-IFX_INTERRUPT(prio_DMA, 0, INTPRIO_DMA_UART3)
+#if (USR_UART0_RX_DMA==1)
+static void bsp_usart0_rx_dma_init(void)
 {
-	g_correctTransactions ++;
+   /* Initialize module */
+   IfxDma_Dma uart0_rx_dma;
+   uart0_rx_dma.dma = &MODULE_DMA;
+
+   /* Initial configuration for all channels */
+   IfxDma_Dma_ChannelConfig cfg;
+   IfxDma_Dma_initChannelConfig(&cfg, &uart0_rx_dma);
+
+   cfg.channelId = (IfxDma_ChannelId) UART0_RX_ISR_PRIORITY;
+   cfg.sourceAddress = (uint32) &UART0.asclin->RXDATA.U;
+   cfg.destinationAddress = (uint32)&UART0_DMA_RxBuffer;
+   cfg.transferCount = UART0_DMA_RX_BUFFER_SIZE;
+   cfg.blockMode = IfxDma_ChannelMove_1;
+   cfg.requestMode = IfxDma_ChannelRequestMode_oneTransferPerRequest;
+   cfg.operationMode = IfxDma_ChannelOperationMode_continuous;
+   cfg.moveSize = IfxDma_ChannelMoveSize_8bit;
+   cfg.hardwareRequestEnabled = TRUE;
+   cfg.sourceAddressIncrementStep = IfxDma_ChannelIncrementStep_1;
+   cfg.sourceAddressIncrementDirection =IfxDma_ChannelIncrementDirection_positive;
+   cfg.sourceAddressCircularRange = IfxDma_ChannelIncrementCircular_none;
+   cfg.destinationAddressIncrementStep = IfxDma_ChannelIncrementStep_1;
+   cfg.destinationAddressIncrementDirection =IfxDma_ChannelIncrementDirection_positive;
+   cfg.destinationAddressCircularRange = uart0_Dma_ChannelIncrementCircular(UART0_DMA_RX_BUFFER_SIZE);
+   cfg.sourceCircularBufferEnabled = TRUE;
+   cfg.destinationCircularBufferEnabled = TRUE;
+   cfg.channelInterruptEnabled = TRUE;
+   cfg.channelInterruptControl =IfxDma_ChannelInterruptControl_transferCountDecremented;
+   cfg.channelInterruptPriority = UART0_RX_DMA_PRIORITY;
+   cfg.channelInterruptTypeOfService = IfxSrc_Tos_cpu0;
+
+   IfxDma_Dma_initChannel(&uart0_rx_Dma_Channel, &cfg);
 }
-*/
+#endif
+
+#if (USR_UART0_TX_DMA==1)
+static void bsp_usart0_tx_dma_init(void)
+{
+   /* Initialize module */
+   IfxDma_Dma uart0_tx_dma;
+   uart0_tx_dma.dma = &MODULE_DMA;
+
+   /* Initial configuration for all channels */
+   IfxDma_Dma_ChannelConfig cfg;
+   IfxDma_Dma_initChannelConfig(&cfg, &uart0_tx_dma);
+
+   cfg.channelId = (IfxDma_ChannelId) 27;//UART0_TX_ISR_PRIORITY;
+   cfg.sourceAddress = (uint32) &UART0_DMA_TxBuffer;
+   cfg.destinationAddress = (uint32) &UART0.asclin->TXDATA.U;
+   cfg.transferCount = 0;
+   cfg.blockMode = IfxDma_ChannelMove_1;
+   cfg.requestMode = IfxDma_ChannelRequestMode_completeTransactionPerRequest;
+   cfg.operationMode = IfxDma_ChannelOperationMode_single;
+   cfg.moveSize = IfxDma_ChannelMoveSize_8bit;
+   cfg.hardwareRequestEnabled = FALSE;
+   cfg.sourceAddressIncrementStep = IfxDma_ChannelIncrementStep_1;
+   cfg.sourceAddressIncrementDirection =IfxDma_ChannelIncrementDirection_positive;
+   cfg.sourceAddressCircularRange = IfxDma_ChannelIncrementCircular_none;
+   cfg.destinationAddressIncrementStep = IfxDma_ChannelIncrementStep_1;
+   cfg.destinationAddressIncrementDirection =IfxDma_ChannelIncrementDirection_positive;
+   cfg.destinationAddressCircularRange = IfxDma_ChannelIncrementCircular_none;
+   cfg.sourceCircularBufferEnabled = FALSE;
+   cfg.destinationCircularBufferEnabled = TRUE;
+   cfg.channelInterruptEnabled = FALSE;
+   cfg.channelInterruptControl =IfxDma_ChannelInterruptControl_thresholdLimitMatch;
+   cfg.channelInterruptPriority = UART0_TX_DMA_PRIORITY;
+   cfg.channelInterruptTypeOfService = IfxSrc_Tos_cpu0;
+
+   IfxDma_Dma_initChannel(&uart0_tx_Dma_Channel, &cfg);
+}
+#endif
+
 void bsp_UART0_init(void)
 {
-	/* disable interrupts */
-	boolean interrupt_state = disableInterrupts();
-
-    /* create module config */
+	volatile Ifx_SRC_SRCR *src;
     IfxAsclin_Asc_Config UART0_Config;
     IfxAsclin_Asc_initModuleConfig(&UART0_Config, &MODULE_ASCLIN0);
 
-    /* set the desired baudrate */
     UART0_Config.baudrate.prescaler    = 4;
-    UART0_Config.baudrate.baudrate     = 115200; /* FDR values will be calculated in initModule */
+    UART0_Config.baudrate.baudrate     = 230400; /* FDR values will be calculated in initModule */
     UART0_Config.baudrate.oversampling = IfxAsclin_OversamplingFactor_8;
     // ISR priorities and interrupt target
     UART0_Config.interrupt.txPriority = UART0_TX_ISR_PRIORITY;
     UART0_Config.interrupt.rxPriority = UART0_RX_ISR_PRIORITY;
     UART0_Config.interrupt.erPriority = UART0_ER_ISR_PRIORITY;
-    UART0_Config.interrupt.typeOfService =   IfxCpu_Irq_getTos(IfxCpu_getCoreIndex());
+    UART0_Config.interrupt.typeOfService =  IfxSrc_Tos_cpu0;
 
     UART0_Config.txBuffer = &UART0_TxBuffer;
     UART0_Config.txBufferSize = UART0_TX_BUFFER_SIZE;
 
     UART0_Config.rxBuffer = &UART0_RxBuffer;
     UART0_Config.rxBufferSize = UART0_RX_BUFFER_SIZE;
-
 
     IfxAsclin_Asc_Pins pins =
     {
@@ -147,10 +242,40 @@ void bsp_UART0_init(void)
 
     UART0_Config.pins = &pins;
 
-    /* initialize module */
     IfxAsclin_Asc_initModule(&UART0, &UART0_Config);
 
-    restoreInterrupts(interrupt_state);
+#if (USR_UART0_RX_DMA==1)
+	src = IfxAsclin_getSrcPointerRx(UART0_Config.asclin);
+
+	IfxSrc_init(src, IfxSrc_Tos_dma, UART0_RX_ISR_PRIORITY);
+
+	IfxAsclin_enableRxFifoFillLevelFlag(UART0_Config.asclin, TRUE);
+	IfxSrc_enable(src);
+	bsp_usart0_rx_dma_init();
+#endif
+
+#if (USR_UART0_TX_DMA==1)
+	src = IfxAsclin_getSrcPointerTx(UART0_Config.asclin);
+
+	IfxSrc_init(src, IfxSrc_Tos_dma, UART0_TX_ISR_PRIORITY);
+
+	IfxAsclin_enableTxFifoFillLevelFlag(UART0_Config.asclin, TRUE);
+	IfxSrc_enable(src);
+	bsp_usart0_tx_dma_init();
+#endif
+
+
+}
+uint8 uart0_buff[1024]={0};
+void uart0_dma_callback(void)
+{
+	uint16 len=0;
+	UART0_Read_Data(uart0_buff,&len);
+   if(len)
+   {
+	IfxAsclin_Asc_write(&UART0,uart0_buff,&len,TIME_INFINITE);
+}
+
 }
 void bsp_UART1_init(void)
 {
@@ -237,71 +362,6 @@ void bsp_UART2_init(void)
     IfxCpu_enableInterrupts();
 }
 
-//static void bsp_usart3_dma_init(void)
-//{
-//	/* Initialize an instance of IfxDma_Dma_Config with default values */
-//	    IfxDma_Dma_Config dmaConfig;
-//	    IfxDma_Dma_initModuleConfig(&dmaConfig, &MODULE_DMA);
-//
-//	    /* Initialize module */
-//	    IfxDma_Dma_initModule(&uart3_dma, &dmaConfig);
-//
-//	    /* Initial configuration for all channels */
-//	    IfxDma_Dma_ChannelConfig cfg;
-//	    IfxDma_Dma_initChannelConfig(&cfg, &uart3_dma);
-//
-//	    /* Following configuration is used by the DMA channel */
-//	    cfg.transferCount = 256;
-//	    cfg.moveSize = IfxDma_ChannelMoveSize_8bit;
-//	    cfg.blockMode = IfxDma_ChannelMove_1;
-//
-//	    /* DMA completes a full transaction on requests */
-//	    cfg.requestMode = IfxDma_ChannelRequestMode_completeTransactionPerRequest;
-//
-//	    /* DMA as Interrupt Service Provider */
-//	    cfg.hardwareRequestEnabled = TRUE;
-//
-//	    /* DMA channel stays enabled after one request */
-//	    cfg.operationMode = IfxDma_ChannelOperationMode_continuous;
-//
-//
-//	    /*************** Source and destination addresses ***************/
-//
-//	    /* Source address is not modified after a transfer */
-//	    cfg.sourceAddressCircularRange = IfxDma_ChannelIncrementCircular_none;
-//
-//	    /* The element to transfer is always at the same location */
-//	    cfg.sourceCircularBufferEnabled = TRUE;
-//	    cfg.destinationAddressCircularRange = IfxDma_ChannelIncrementCircular_none;
-//
-//	    /* Copy the elements sequentially next to each others */
-//	    cfg.destinationCircularBufferEnabled = FALSE;
-//
-//
-//	    /*************** Channel specific configurations ***************/
-//
-//	    /* Select the Channel 12, related to the interruption on AscLin RX */
-//	    cfg.channelId = (IfxDma_ChannelId) IFX_INTPRIO_ASCLIN3_RX;
-//
-//	    /* Address of the UART RX FIFO */
-//	    cfg.sourceAddress = (uint32) &UART3.asclin->RXDATA.U;
-//
-//	    /* Address of LMURAM */
-//	    cfg.destinationAddress = (uint32)&UART3_RxBuffer;
-//	    cfg.channelInterruptEnabled = TRUE;
-//
-//	    /* DMA triggers an interrupt once the full transaction is done */
-//	    cfg.channelInterruptControl = IfxDma_ChannelInterruptControl_thresholdLimitMatch;
-//
-//	    /* Priority of the channel interrupt trigger */
-//	    cfg.channelInterruptPriority = INTPRIO_DMA_UART3;
-//
-//	    /* Interrupt service provider */
-//	    cfg.channelInterruptTypeOfService = IfxSrc_Tos_cpu0;
-//
-//	    /* Initialize the DMA channel */
-//	    IfxDma_Dma_initChannel(&Dma_Channel_uart3, &cfg);
-//}
 
 void bsp_UART3_init(void)
 {
@@ -350,13 +410,32 @@ void bsp_UART3_init(void)
     bsp_usart3_dma_init();
     */
 }
-uint8 UART0_Read_Data(void)
+void UART0_Read_Data(unsigned char *dest,unsigned short *rlen)
 {
-	if(IfxAsclin_Asc_getReadCount(&UART0) >0)
+	uint16 len=0;
+
+
+	if(uart0_cnt_head == uart0_cnt_tail)
 	{
-		return IfxAsclin_Asc_blockingRead(&UART0);
+		*rlen=0;
+	    return ;
 	}
-	return 0;
+	//uart0_printf("head:%d,tail:%d,tcount:%d\r\n",uart0_cnt_head , uart0_cnt_tail,Dma_Channel_uart0.channel->CHCSR.B.TCOUNT);
+	if(uart0_cnt_tail > uart0_cnt_head)
+	{
+		  len=uart0_cnt_tail-uart0_cnt_head;
+		  memcpy(dest,UART0_DMA_RxBuffer + uart0_cnt_head,len);
+	}
+	else
+	{
+		 len=UART0_DMA_RX_BUFFER_SIZE-uart0_cnt_head;
+		  memcpy(dest,UART0_DMA_RxBuffer + uart0_cnt_head,len);
+
+		  memcpy(dest+len,UART0_DMA_RxBuffer,uart0_cnt_tail);
+		  len += uart0_cnt_tail;
+	}
+	uart0_cnt_head=uart0_cnt_tail;
+	*rlen=len;
 }
 uint8 UART1_Read_Data(void)
 {
@@ -382,12 +461,18 @@ uint8 UART3_Read_Data(void)
 	}
 	return 0;
 }
-
-boolean UART0_Write_Data(uint8 *data,Ifx_SizeT *cnt)
+#if (USR_UART0_TX_DMA==1)
+void UART0_Write_Data_DMA(uint8 *data,uint16 cnt)
 {
-	return IfxAsclin_Asc_write(&UART0,data,cnt,TIME_INFINITE);
-}
+	memcpy(UART0_DMA_TxBuffer,data,cnt);
+	Ifx_DMA_CH *ch=uart0_tx_Dma_Channel.channel;
+	ch->SADR.U = (uint32) &UART0_DMA_TxBuffer;
+	ch->CHCFGR.B.TREL = cnt;
 
+	IfxDma_enableChannelTransaction(&MODULE_DMA,uart0_tx_Dma_Channel.channelId);
+	MODULE_ASCLIN0.FLAGSSET.B.TFLS=1;
+}
+#endif
 boolean UART1_Write_Data(uint8 *data,Ifx_SizeT *cnt)
 {
 	return IfxAsclin_Asc_write(&UART1,data,cnt,TIME_INFINITE);
@@ -434,53 +519,9 @@ void uart_putstr(const uint8 *str)
 }
 void uart_putbuff(uint8 *buff, uint32 len)
 {
-	while(len)
-	{
-		uart_putchar(*buff);
-		len--;
-		buff++;
-	}
+	Ifx_SizeT count = len;
+    (void)IfxAsclin_Asc_write(&UART0, buff, &count, TIME_INFINITE);
 }
-/*
-  @brief      读取串口接收的数据（whlie等待）
-  @param      *dat            接收数据的地址
-  @return     void
-  Sample usage:               uint8 dat; uart_getchar(UART_0,&dat);       // 接收串口0数据  存在在dat变量里
-*/
-void uart_getchar(uint8 *dat)
-{
-	while(!IfxAsclin_Asc_getReadCount(&UART0));
-	*dat = IfxAsclin_Asc_blockingRead(&UART0);
-}
-
-/*
-  @brief      读取串口接收的数据（查询接收）
-  @param      *dat            接收数据的地址
-  @return     uint8           1：接收成功   0：未接收到数据
-  Sample usage:               uint8 dat; uart_query(UART_0,&dat);       // 接收串口0数据  存在在dat变量里
-*/
-uint8 uart_query(uint8 *dat)
-{
-	if(IfxAsclin_Asc_getReadCount(&UART0) >0)
-	{
-		*dat = IfxAsclin_Asc_blockingRead(&UART0);
-		return 1;
-	}
-    return 0;
-}
-
-/*
-  @brief      重定义printf 到串口
-  @param      ch      需要打印的字节
-  @param      stream  数据流
-  @note       此函数由编译器自带库里的printf所调用
-*/
-int fputc(int ch, FILE *stream)
-{
-    uart_putchar((char)ch);
-    return(ch);
-}
-
 uint8 number_conversion_ascii(uint32 dat, int8 *p, uint8 neg_type, uint8 radix)
 {
     int32   neg_dat;
