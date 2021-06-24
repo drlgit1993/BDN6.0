@@ -80,11 +80,14 @@ int core0_main(void)
     g_AppCpu0.info.stmFreq = IfxStm_getFrequency(&MODULE_STM0);
 
     bsp_UART0_init();
-    uart0_printf("%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
-   /*
     bsp_UART1_init();
     bsp_UART2_init();
     bsp_UART3_init();
+    uart0_printf("UART0:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
+    uart1_printf("UART1:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
+    uart2_printf("UART2:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
+    uart3_printf("UART3:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
+   /*
     bsp_QSPI_Init();
     bsp_gpio_init();
     */
@@ -100,8 +103,10 @@ int core0_main(void)
 
     while(1)
     {
-    	delay_ms(10);
-    	uart0_dma_callback();
+    	 uart0_dma_test();
+    	 uart1_dma_test();
+    	 uart2_dma_test();
+    	 uart3_dma_test();
     	IfxScuWdt_serviceCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     }
 
