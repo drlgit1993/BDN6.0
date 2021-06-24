@@ -84,13 +84,11 @@ int core0_main(void)
     bsp_UART2_init();
     bsp_UART3_init();
     uart0_printf("UART0:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
-    uart1_printf("UART1:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
-    uart2_printf("UART2:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
-    uart3_printf("UART3:%d,%d,%d,%d\r\n",g_AppCpu0.info.pllFreq,g_AppCpu0.info.cpuFreq,g_AppCpu0.info.sysFreq,g_AppCpu0.info.stmFreq);
-   /*
+
     bsp_QSPI_Init();
-    bsp_gpio_init();
-    */
+
+    //   bsp_gpio_init();
+
 
     //IfxScuWdt_enableCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     IfxScuWdt_changeCpuWatchdogReload(IfxScuWdt_getCpuWatchdogPassword(), WD_REL_VAL); /* Set CPU0WD timer to ~1.3 sec */
@@ -107,7 +105,7 @@ int core0_main(void)
     	 uart1_dma_test();
     	 uart2_dma_test();
     	 uart3_dma_test();
-    	IfxScuWdt_serviceCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
+    	 IfxScuWdt_serviceCpuWatchdog(IfxScuWdt_getCpuWatchdogPassword());
     }
 
     return 0;

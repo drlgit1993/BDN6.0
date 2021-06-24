@@ -15,8 +15,8 @@
 
 IFX_EXTERN void bsp_QSPI_Init(void);
 
-IFX_EXTERN void QSPI0_Master_Write_Data(uint8 *src,Ifx_SizeT len);
-IFX_EXTERN void QSPI0_Master_Read_Data(uint8 *dest,Ifx_SizeT len);
+IFX_EXTERN void QSPI0_Master_Write_Data(uint8 chIdx,uint8 *src,Ifx_SizeT len);
+IFX_EXTERN void QSPI0_Master_Read_Data(uint8 chIdx,uint8 *dest,Ifx_SizeT len);
 
 IFX_EXTERN void QSPI2_Master_Write_Data(uint8 *src,Ifx_SizeT len);
 IFX_EXTERN void QSPI2_Master_Read_Data(uint8 *dest,Ifx_SizeT len);
